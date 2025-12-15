@@ -1,0 +1,46 @@
+// Prisma schema for "Документы без юриста" (только РФ)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Template {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  title         String
+  description   String
+  jurisdiction  String          @default("RU")
+  bodyPattern   String
+  lawReferences String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  fields        TemplateField[]
+  drafts        DocumentDraft[]
+}
+
+model TemplateField {
+  id           String   @id @default(cuid())
+  template     Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId   String
+  name         String
+  label        String
+  type         String
+  required     Boolean  @default(true)
+  placeholder  String?
+  helperText   String?
+  options      String?
+  order        Int      @default(0)
+}
+
+model DocumentDraft {
+  id         String   @id @default(cuid())
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+  data       String
+  createdAt  DateTime @default(now())
+}
